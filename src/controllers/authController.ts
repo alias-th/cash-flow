@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { appDataSource } from "../app-data-source";
-import { User } from "../entities/user.entity";
+import { Account } from "../entities/account.entity";
 import { BadRequestError } from "../errors/BadRequestError";
 import { UAParser } from "ua-parser-js";
 import { Device } from "../entities/device.entity";
@@ -9,6 +9,8 @@ import { Device } from "../entities/device.entity";
 interface RegisterBody {
   username: string;
   password: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
 }
@@ -22,29 +24,32 @@ export const register = async (
   reply: FastifyReply
 ) => {
   try {
-    const { email, password, phoneNumber, username } = request.body;
+    const { email, password, phoneNumber, username, firstName, lastName } =
+      request.body;
 
-    //   Check existing username
-    const existingUser = await appDataSource.manager.findOneBy(User, {
+    //   Check existing account
+    const existingAccount = await appDataSource.manager.findOneBy(Account, {
       username,
     });
 
-    if (existingUser) {
-      throw new BadRequestError("Username is already exists.");
+    if (existingAccount) {
+      throw new BadRequestError("Account is already exists.");
     }
 
-    //   Create new user
-    const newUser = new User();
+    //   Create new account
+    const newAccount = new Account();
     const hashedPassword = await bcrypt.hash(password, 12);
-    newUser.username = username;
-    newUser.password = hashedPassword;
-    newUser.email = email;
-    newUser.phoneNumber = phoneNumber;
+    newAccount.username = username;
+    newAccount.password = hashedPassword;
+    newAccount.email = email;
+    newAccount.phoneNumber = phoneNumber;
+    newAccount.firstName = firstName;
+    newAccount.lastName = lastName;
 
-    // Save user to database
-    await appDataSource.manager.save(newUser);
+    // Save account to database
+    await appDataSource.manager.save(newAccount);
 
-    reply.code(201).send({ message: "User is registered successfully." });
+    reply.code(201).send({ message: "Account is registered successfully." });
   } catch (error) {
     if (error instanceof Error) {
       throw new BadRequestError(error.message);
@@ -61,19 +66,19 @@ export const login = async (
     const { browser, device, os } = UAParser(request.headers["user-agent"]);
     const userIp = request.ip;
 
-    // Check existing user
-    const existingUser = await appDataSource.manager.findOneBy(User, {
+    // Check existing account
+    const existingAccount = await appDataSource.manager.findOneBy(Account, {
       username,
     });
 
-    if (!existingUser) {
+    if (!existingAccount) {
       throw new BadRequestError("Invalid username or password.");
     }
 
     // Compare password
     const passwordIsValid = await bcrypt.compare(
       password,
-      existingUser.password
+      existingAccount.password
     );
     if (!passwordIsValid) {
       throw new BadRequestError("Invalid username or password.");
@@ -81,7 +86,7 @@ export const login = async (
 
     // Check device
     const userAgent = {
-      userId: existingUser.id.toString(),
+      userId: existingAccount.id.toString(),
       browser: browser.name ?? "Unknown",
       deviceName: device.model ?? "Unknown",
       deviceType: device.type ?? "Unknown",
@@ -104,7 +109,7 @@ export const login = async (
       userDevice = await appDataSource.manager.save(device);
     }
 
-    reply.code(200).send({ message: "User is login successfully." });
+    reply.code(200).send({ message: "Account is login successfully." });
   } catch (error) {
     if (error instanceof Error) {
       throw new BadRequestError(error.message);

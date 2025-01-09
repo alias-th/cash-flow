@@ -10,6 +10,17 @@ export const register = Joi.object().keys({
     "string.min": "Password must be at least 6 characters long.",
     "any.required": "Password is required.",
   }),
+
+  firstName: Joi.string().required().messages({
+    "string.empty": "First name is required.",
+    "any.required": "First name is required.",
+  }),
+
+  lastName: Joi.string().required().messages({
+    "string.empty": "Last name is required.",
+    "any.required": "Last name is required.",
+  }),
+
   email: Joi.string().email().required().messages({
     "string.empty": "Email is required.",
     "string.email": "Email must be a valid email address.",

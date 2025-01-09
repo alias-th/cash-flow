@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { User } from "./entities/user.entity";
+import { Account } from "./entities/account.entity";
 import { Token } from "./entities/token.entity";
 import { Category } from "./entities/category.entity";
 import { Device } from "./entities/device.entity";
@@ -27,7 +27,7 @@ function initDatabase() {
     host,
     port,
     database,
-    entities: [User, Token, Category, Device, Transaction],
+    entities: [Account, Token, Category, Device, Transaction],
     logging: true,
     synchronize: process.env.NODE_ENV !== "production",
   });

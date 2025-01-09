@@ -6,7 +6,7 @@ class Balance {
 }
 
 @Entity()
-export class User {
+export class Account {
   @ObjectIdColumn()
   id: ObjectId;
 
@@ -15,6 +15,12 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column()
+  firstName: string;
+
+  @Column()
+  lastName: string;
 
   @Column()
   email: string;
