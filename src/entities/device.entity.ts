@@ -6,7 +6,7 @@ export class Device {
   id: ObjectId;
 
   @Column()
-  userId: string;
+  accountId: string;
 
   @Column()
   deviceName: string;

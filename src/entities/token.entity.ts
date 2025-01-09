@@ -1,4 +1,5 @@
 import { Entity, ObjectId, ObjectIdColumn, Column } from "typeorm";
+import { TokenType } from "../types";
 
 @Entity()
 export class Token {
@@ -6,7 +7,7 @@ export class Token {
   id: ObjectId;
 
   @Column()
-  userId: string;
+  accountId: string;
 
   @Column()
   deviceId: string;
@@ -15,7 +16,10 @@ export class Token {
   token: string;
 
   @Column()
-  tokenType: string;
+  tokenType: TokenType;
+
+  @Column()
+  revoked: boolean;
 
   @Column()
   expiresAt: Date;

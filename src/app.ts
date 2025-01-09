@@ -7,7 +7,13 @@ const envOptions = {
   dotenv: true,
   schema: {
     type: "object",
-    required: ["PORT", "MONGODB_HOST", "MONGODB_PORT", "MONGODB_DATABASE"],
+    required: [
+      "PORT",
+      "MONGODB_HOST",
+      "MONGODB_PORT",
+      "MONGODB_DATABASE",
+      "SECRET_MESSAGE",
+    ],
     properties: {
       PORT: {
         type: "string",
@@ -20,6 +26,9 @@ const envOptions = {
         type: "string",
       },
       MONGODB_DATABASE: {
+        type: "string",
+      },
+      SECRET_MESSAGE: {
         type: "string",
       },
     },

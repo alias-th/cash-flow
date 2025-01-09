@@ -11,6 +11,7 @@ declare module "fastify" {
       MONGODB_HOST: string;
       MONGODB_PORT: string;
       MONGODB_DATABASE: string;
+      SECRET_MESSAGE: string;
     };
   }
 }

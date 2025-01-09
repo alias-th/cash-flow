@@ -7,7 +7,7 @@ export class Transaction {
   id: ObjectId;
 
   @Column()
-  userId: string;
+  accountId: string;
 
   @Column()
   categoryId: string;

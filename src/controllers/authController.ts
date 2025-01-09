@@ -5,6 +5,8 @@ import { Account } from "../entities/account.entity";
 import { BadRequestError } from "../errors/BadRequestError";
 import { UAParser } from "ua-parser-js";
 import { Device } from "../entities/device.entity";
+import { createToken } from "../utils";
+import { TokenType } from "../types";
 
 interface RegisterBody {
   username: string;
@@ -65,6 +67,7 @@ export const login = async (
     const { username, password } = request.body;
     const { browser, device, os } = UAParser(request.headers["user-agent"]);
     const userIp = request.ip;
+    const secretMessage = process.env.SECRET_MESSAGE ?? "";
 
     // Check existing account
     const existingAccount = await appDataSource.manager.findOneBy(Account, {
@@ -74,6 +77,8 @@ export const login = async (
     if (!existingAccount) {
       throw new BadRequestError("Invalid username or password.");
     }
+
+    const accountId = existingAccount.id.toString();
 
     // Compare password
     const passwordIsValid = await bcrypt.compare(
@@ -86,7 +91,7 @@ export const login = async (
 
     // Check device
     const userAgent = {
-      userId: existingAccount.id.toString(),
+      accountId,
       browser: browser.name ?? "Unknown",
       deviceName: device.model ?? "Unknown",
       deviceType: device.type ?? "Unknown",
@@ -99,17 +104,49 @@ export const login = async (
     });
 
     // Create new device if not exists
-    let userDevice = null;
+    let newDevice = null;
     if (!existingDevice) {
       const device = new Device();
       const keyOfDevice = Object.keys(userAgent) as (keyof typeof userAgent)[];
       keyOfDevice.forEach((key) => {
         device[key] = userAgent[key];
       });
-      userDevice = await appDataSource.manager.save(device);
+      newDevice = await appDataSource.manager.save(device);
     }
 
-    reply.code(200).send({ message: "Account is login successfully." });
+    // Generate tokens
+    const deviceId =
+      newDevice?.id?.toString() ?? existingDevice?.id?.toString() ?? "";
+    const token = createToken(
+      accountId,
+      deviceId,
+      TokenType.TOKEN,
+      1,
+      secretMessage
+    );
+    const refreshToken = createToken(
+      accountId,
+      deviceId,
+      TokenType.REFRESH_TOKEN,
+      24 * 7,
+      secretMessage
+    );
+
+    await appDataSource.manager.save(token.token);
+    await appDataSource.manager.save(refreshToken.token);
+
+    // Send token to user
+    reply.code(200).send({
+      message: "Account is login successfully.",
+      token: {
+        value: token.plainToken,
+        expiredAt: token.token.expiresAt,
+      },
+      refreshToken: {
+        value: refreshToken.plainToken,
+        expiredAt: refreshToken.token.expiresAt,
+      },
+    });
   } catch (error) {
     if (error instanceof Error) {
       throw new BadRequestError(error.message);
