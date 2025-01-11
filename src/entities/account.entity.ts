@@ -1,6 +1,6 @@
 import { Entity, ObjectId, ObjectIdColumn, Column } from "typeorm";
 
-class Balance {
+export class Balance {
   @Column()
   balance: number;
 }

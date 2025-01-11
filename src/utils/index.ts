@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Token } from "../entities/token.entity";
 import { BadRequestError } from "../errors/BadRequestError";
+import badWordsList from "../data/bad-words-list.json";
 
 export const generateToken = () => {
   const tokenValue = crypto.randomBytes(32).toString("hex");
@@ -104,4 +105,10 @@ export const compareToken = (
 ): boolean => {
   const hashedPlainToken = hashToken(plainToken, message);
   return hashedPlainToken === hashedToken;
+};
+
+export const replaceBadWords = (text: string) => {
+  const badWords = badWordsList.words;
+  const regex = new RegExp(`\\b(${badWords.join("|")})\\b`, "gi");
+  return text.replace(regex, (match) => "*".repeat(match.length));
 };

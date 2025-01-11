@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { appDataSource } from "../app-data-source";
-import { Account } from "../entities/account.entity";
+import { Account, Balance } from "../entities/account.entity";
 import { BadRequestError } from "../errors/BadRequestError";
 import { UAParser } from "ua-parser-js";
 import { Device } from "../entities/device.entity";
@@ -45,6 +45,8 @@ export const register = async (
 
     //   Create new account
     const newAccount = new Account();
+    const balance = new Balance();
+    balance.balance = 0;
     const hashedPassword = await bcrypt.hash(password, 12);
     newAccount.username = username;
     newAccount.password = hashedPassword;
@@ -52,6 +54,7 @@ export const register = async (
     newAccount.phoneNumber = phoneNumber;
     newAccount.firstName = firstName;
     newAccount.lastName = lastName;
+    newAccount.balance = balance;
 
     // Save account to database
     await appDataSource.manager.save(newAccount);

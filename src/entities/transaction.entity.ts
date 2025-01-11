@@ -28,5 +28,8 @@ export class Transaction {
   note: MultiLang;
 
   @Column()
-  transactionTyp: TransactionType;
+  transactionType: TransactionType;
+
+  @Column()
+  createdAt: Date;
 }

@@ -4,6 +4,8 @@ import fastifyEnv from "@fastify/env";
 import authRoutes from "./routes/authRoute";
 import categoryRoute from "./routes/categoryRoute";
 import protectRoutePlugin from "./plugins/protectRoutePlugin";
+import multipart from "@fastify/multipart";
+import transactionRoute from "./routes/transactionRoute";
 
 const envOptions = {
   dotenv: true,
@@ -50,17 +52,24 @@ async function buildApp() {
     logger = true;
   }
 
-  const fastify = Fastify({ logger });
+  const fastify = Fastify({ logger, bodyLimit: 50 * 1024 * 1024 });
 
   await fastify.register(cors);
 
   await fastify.register(fastifyEnv, envOptions);
+
+  fastify.register(multipart, {
+    attachFieldsToBody: true,
+    limits: { files: 5 * 1024 * 1024 },
+  });
 
   fastify.register(protectRoutePlugin);
 
   fastify.register(authRoutes, { prefix: "/api/auth" });
 
   fastify.register(categoryRoute, { prefix: "/api/categories" });
+
+  fastify.register(transactionRoute, { prefix: "/api/transactions" });
 
   fastify.setErrorHandler(async function (error, request, reply) {
     request.log.error({ error });
