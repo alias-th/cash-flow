@@ -42,3 +42,10 @@ export const login = Joi.object().keys({
     "any.required": "Password is required.",
   }),
 });
+
+export const refreshToken = Joi.object().keys({
+  refreshToken: Joi.string().required().messages({
+    "string.empty": "Refresh token is required.",
+    "any.required": "Refresh token is required.",
+  }),
+});

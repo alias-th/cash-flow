@@ -29,6 +29,19 @@ const authRoutes = async function (fastify: FastifyInstance) {
     },
     authController.login
   );
+
+  fastify.post(
+    "/refresh-token",
+    {
+      schema: {
+        body: authSchema.refreshToken,
+      },
+      validatorCompiler: ({ schema }) => {
+        return (data: any) => (schema as unknown as Joi.Schema).validate(data);
+      },
+    },
+    authController.refreshToken
+  );
 };
 
 export default authRoutes;

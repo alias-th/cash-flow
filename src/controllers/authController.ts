@@ -5,8 +5,8 @@ import { Account } from "../entities/account.entity";
 import { BadRequestError } from "../errors/BadRequestError";
 import { UAParser } from "ua-parser-js";
 import { Device } from "../entities/device.entity";
-import { createToken } from "../utils";
-import { TokenType } from "../types";
+import { compareToken, createToken, hashToken } from "../utils";
+import { Token } from "../entities/token.entity";
 
 interface RegisterBody {
   username: string;
@@ -19,6 +19,10 @@ interface RegisterBody {
 interface LoginBody {
   username: string;
   password: string;
+}
+
+interface RefreshTokenBody {
+  refreshToken: string;
 }
 
 export const register = async (
@@ -117,34 +121,26 @@ export const login = async (
     // Generate tokens
     const deviceId =
       newDevice?.id?.toString() ?? existingDevice?.id?.toString() ?? "";
-    const token = createToken(
+    const newToken = createToken(
       accountId,
       deviceId,
-      TokenType.TOKEN,
-      1,
-      secretMessage
-    );
-    const refreshToken = createToken(
-      accountId,
-      deviceId,
-      TokenType.REFRESH_TOKEN,
-      24 * 7,
+      "1d",
+      "7d",
       secretMessage
     );
 
-    await appDataSource.manager.save(token.token);
-    await appDataSource.manager.save(refreshToken.token);
+    await appDataSource.manager.save(newToken.token);
 
     // Send token to user
     reply.code(200).send({
       message: "Account is login successfully.",
       token: {
-        value: token.plainToken,
-        expiredAt: token.token.expiresAt,
+        value: newToken.plainToken,
+        expiredAt: newToken.token.tokenExpiredAt,
       },
       refreshToken: {
-        value: refreshToken.plainToken,
-        expiredAt: refreshToken.token.expiresAt,
+        value: newToken.plainRefreshToken,
+        expiredAt: newToken.token.refreshTokenExpiredAt,
       },
     });
   } catch (error) {
@@ -152,4 +148,70 @@ export const login = async (
       throw new BadRequestError(error.message);
     }
   }
+};
+
+export const refreshToken = async (
+  request: FastifyRequest<{ Body: RefreshTokenBody }>,
+  reply: FastifyReply
+) => {
+  const { refreshToken } = request.body;
+
+  const secretMessage = process.env.SECRET_MESSAGE;
+
+  if (!secretMessage) {
+    throw new BadRequestError("Secret message must provided!");
+  }
+
+  const hashedRefreshToken = hashToken(refreshToken, secretMessage);
+
+  // Checking existing token
+  const existingToken = await appDataSource.manager.findOneBy(Token, {
+    refreshToken: hashedRefreshToken,
+    revoked: false,
+  });
+
+  if (!existingToken) {
+    throw new BadRequestError("Invalid refresh token.");
+  }
+
+  // Checking valid token
+  const isValid = compareToken(
+    refreshToken,
+    existingToken.refreshToken,
+    secretMessage
+  );
+  if (!isValid) {
+    throw new BadRequestError("Invalid refresh token.");
+  }
+
+  // Checking expired date
+  if (existingToken.refreshTokenExpiredAt < new Date()) {
+    throw new BadRequestError("Invalid refresh token.");
+  }
+
+  // Generate new token
+  const newToken = createToken(
+    existingToken.accountId,
+    existingToken.deviceId,
+    "1d",
+    "7d",
+    secretMessage
+  );
+  await appDataSource.manager.save(newToken.token);
+
+  // Revoked old token
+  existingToken.revoked = true;
+  await appDataSource.manager.save(existingToken);
+
+  reply.code(200).send({
+    message: "Token is refreshed successfully!",
+    token: {
+      value: newToken.plainToken,
+      expiredAt: newToken.token.tokenExpiredAt,
+    },
+    refreshToken: {
+      value: newToken.plainRefreshToken,
+      expiredAt: newToken.token.refreshTokenExpiredAt,
+    },
+  });
 };

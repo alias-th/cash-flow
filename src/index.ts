@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import buildApp from "./app";
 import closeWithGrace from "close-with-grace";
-
 import { appDataSource } from "./app-data-source";
 
 declare module "fastify" {
@@ -18,7 +17,6 @@ declare module "fastify" {
 
 const start = async () => {
   // Establish database connection
-
   try {
     await appDataSource.initialize();
     console.log("Data Source has been initialized!");
