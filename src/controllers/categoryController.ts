@@ -46,15 +46,17 @@ export const removeCategory = async (
     const id = new ObjectId(categoryId);
 
     // Check existing category
-    const existingCategory = await appDataSource.manager.findOne(Category, {
-      where: { id },
-    });
+    const existingCategory = await appDataSource
+      .getMongoRepository(Category)
+      .findOne({ where: { _id: id } });
     if (!existingCategory) {
       throw new BadRequestError("Category not found.");
     }
 
     // Remove category
     await appDataSource.manager.remove(existingCategory);
+
+    reply.code(200).send({ message: "Category is removed successfully." });
   } catch (error) {
     if (error instanceof Error) {
       throw new BadRequestError(error.message);

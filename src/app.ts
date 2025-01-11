@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import fastifyEnv from "@fastify/env";
 import authRoutes from "./routes/authRoute";
 import categoryRoute from "./routes/categoryRoute";
+import protectRoutePlugin from "./plugins/protectRoutePlugin";
 
 const envOptions = {
   dotenv: true,
@@ -54,6 +55,8 @@ async function buildApp() {
   await fastify.register(cors);
 
   await fastify.register(fastifyEnv, envOptions);
+
+  fastify.register(protectRoutePlugin);
 
   fastify.register(authRoutes, { prefix: "/api/auth" });
 

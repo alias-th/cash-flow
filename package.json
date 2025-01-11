@@ -18,6 +18,7 @@
     "close-with-grace": "^2.1.0",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1",
+    "fastify-plugin": "^5.0.1",
     "joi": "^17.13.3",
     "mongodb": "^5.9.2",
     "pino-pretty": "^13.0.0",

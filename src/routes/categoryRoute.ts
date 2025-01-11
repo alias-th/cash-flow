@@ -4,6 +4,8 @@ import * as categorySchema from "../schemas/categorySchema";
 import * as categoryController from "../controllers/categoryController";
 
 const categoryRoute = async function (fastify: FastifyInstance) {
+  fastify.addHook("preHandler", fastify.authentication);
+
   fastify.post(
     "/",
     {

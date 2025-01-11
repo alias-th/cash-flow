@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { Token } from "../entities/token.entity";
+import { BadRequestError } from "../errors/BadRequestError";
 
 export const generateToken = () => {
   const tokenValue = crypto.randomBytes(32).toString("hex");
@@ -9,6 +10,34 @@ export const generateToken = () => {
 
 export const hashToken = (token: string, message: string): string => {
   return crypto.createHmac("sha256", message).update(token).digest("hex");
+};
+
+export const verifyToken = async (
+  token: string,
+  existingToken: Token,
+  secretMessage: string
+) => {
+  const isValid = compareToken(token, existingToken.token, secretMessage);
+
+  if (!isValid) {
+    console.error("Invalid token.");
+    return false;
+  }
+
+  if (existingToken.tokenExpiredAt < new Date()) {
+    console.error("Token is expired.");
+    return false;
+  }
+
+  return true;
+};
+
+export const getSecretMessage = () => {
+  const secretMessage = process.env.SECRET_MESSAGE;
+  if (!secretMessage) {
+    throw new BadRequestError("Secret message must provided!");
+  }
+  return secretMessage;
 };
 
 export const parseExpirationString = (expiration: string): Date => {

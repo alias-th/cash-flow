@@ -2,6 +2,7 @@ import "reflect-metadata";
 import buildApp from "./app";
 import closeWithGrace from "close-with-grace";
 import { appDataSource } from "./app-data-source";
+import { FastifyReply } from "fastify";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -12,6 +13,16 @@ declare module "fastify" {
       MONGODB_DATABASE: string;
       SECRET_MESSAGE: string;
     };
+
+    authentication(
+      request: FastifyRequest,
+      reply: FastifyReply,
+      done: (err?: Error) => void
+    ): void;
+  }
+
+  interface FastifyRequest {
+    accountId: string;
   }
 }
 
