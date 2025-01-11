@@ -10,5 +10,5 @@ export class Category {
   categoryName: MultiLang;
 
   @Column()
-  transactionTyp: TransactionType;
+  transactionType: TransactionType;
 }

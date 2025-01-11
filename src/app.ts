@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import fastifyEnv from "@fastify/env";
 import authRoutes from "./routes/authRoute";
+import categoryRoute from "./routes/categoryRoute";
 
 const envOptions = {
   dotenv: true,
@@ -55,6 +56,8 @@ async function buildApp() {
   await fastify.register(fastifyEnv, envOptions);
 
   fastify.register(authRoutes, { prefix: "/api/auth" });
+
+  fastify.register(categoryRoute, { prefix: "/api/categories" });
 
   fastify.setErrorHandler(async function (error, request, reply) {
     request.log.error({ error });
