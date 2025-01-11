@@ -42,6 +42,19 @@ const authRoutes = async function (fastify: FastifyInstance) {
     },
     authController.refreshToken
   );
+
+  fastify.delete(
+    "/remove-account/:accountId",
+    {
+      schema: {
+        params: authSchema.removeAccount,
+      },
+      validatorCompiler: ({ schema }) => {
+        return (data: any) => (schema as unknown as Joi.Schema).validate(data);
+      },
+    },
+    authController.removeAccount
+  );
 };
 
 export default authRoutes;

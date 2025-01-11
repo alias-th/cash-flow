@@ -7,6 +7,7 @@ import { UAParser } from "ua-parser-js";
 import { Device } from "../entities/device.entity";
 import { compareToken, createToken, hashToken } from "../utils";
 import { Token } from "../entities/token.entity";
+import { ObjectId } from "mongodb";
 
 interface RegisterBody {
   username: string;
@@ -214,4 +215,43 @@ export const refreshToken = async (
       expiredAt: newToken.token.refreshTokenExpiredAt,
     },
   });
+};
+
+export const removeAccount = async (
+  request: FastifyRequest<{ Params: { accountId: string } }>,
+  reply: FastifyReply
+) => {
+  try {
+    const { accountId } = request.params;
+
+    const id = new ObjectId(accountId);
+
+    // Check existing account
+    const existingAccount = await appDataSource
+      .getMongoRepository(Account)
+      .findOne({ where: { _id: id } });
+
+    if (!existingAccount) {
+      throw new BadRequestError("Account does not exist.");
+    }
+
+    // Remove account
+    await appDataSource.manager.remove(existingAccount);
+
+    // Remove devices
+    await appDataSource
+      .getMongoRepository(Device)
+      .deleteMany({ accountId: id.toString() });
+
+    // Remove tokens
+    await appDataSource
+      .getMongoRepository(Token)
+      .deleteMany({ accountId: id.toString() });
+
+    reply.code(200).send({ message: "Account is removed successfully." });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new BadRequestError(error.message);
+    }
+  }
 };

@@ -49,3 +49,10 @@ export const refreshToken = Joi.object().keys({
     "any.required": "Refresh token is required.",
   }),
 });
+
+export const removeAccount = Joi.object().keys({
+  accountId: Joi.string().required().messages({
+    "string.empty": "Account ID is required.",
+    "any.required": "Account ID is required.",
+  }),
+});
