@@ -1,0 +1,28 @@
+
+# Ignore logs
+*.log
+
+# Ignore environment variable files
+.env
+
+# Ignore build directories and files
+build/
+dist/
+
+# Ignore git-related files
+.git
+.gitignore
+
+# Ignore Dockerfile itself (optional)
+Dockerfile
+
+# Ignore editor and IDE files
+.vscode/
+.idea/
+
+# Ignore test or coverage directories
+coverage/
+
+# Ignore npm and yarn lock files (optional, if you want to lock dependencies inside the container)
+package-lock.json
+yarn.lock
