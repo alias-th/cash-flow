@@ -21,6 +21,14 @@ interface CreateTransactionBody {
   transactionType: TransactionType;
 }
 
+interface GetTransactionParams {
+  month?: number;
+  year?: number;
+  day?: number;
+  categoryId?: string;
+  accountId?: string;
+}
+
 const pipelineAsync = util.promisify(pipeline);
 
 export const createTransaction = async (
@@ -140,4 +148,70 @@ export const createTransaction = async (
       throw new BadRequestError(error.message);
     }
   }
+};
+
+export const getTransaction = async (
+  request: FastifyRequest<{ Querystring: GetTransactionParams }>,
+  reply: FastifyReply
+) => {
+  const { accountId, categoryId, month, year, day } = request.query;
+  let filter: { [key: string]: { [key: string]: string | Date } | string } = {};
+
+  // Filter year month day
+  if (year && month && day) {
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    filter.createdAt = {
+      $gte: startOfDay,
+      $lte: endOfDay,
+    };
+  } else if (year && month) {
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0); // Last day of the month
+
+    filter.createdAt = {
+      $gte: startOfMonth,
+      $lte: endOfMonth,
+    };
+  } else if (year) {
+    const startOfYear = new Date(year, 0, 1);
+    const endOfYear = new Date(year, 11, 31);
+
+    filter.createdAt = {
+      $gte: startOfYear,
+      $lte: endOfYear,
+    };
+  }
+
+  // Filter account id
+  if (accountId) {
+    filter.accountId = accountId;
+  }
+
+  if (categoryId) {
+    filter.categoryId = categoryId;
+  }
+
+  console.log(filter, "filter");
+
+  const result = await appDataSource.getMongoRepository(Transaction).find({
+    where: filter,
+    order: {
+      createdAt: 1,
+    },
+    select: [
+      "amount",
+      "balance",
+      "createdAt",
+      "description",
+      "note",
+      "transactionType",
+    ],
+  });
+
+  reply.code(200).send({
+    message: "Get transaction successfully.",
+    items: result,
+  });
 };

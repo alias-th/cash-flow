@@ -62,3 +62,33 @@ export const create = Joi.object().keys({
       "custom.file_size_exceeded": "The file size exceeds the 5MB limit.",
     }),
 });
+
+export const getTransaction = Joi.object().keys({
+  day: Joi.number().integer().min(1).max(31).optional().messages({
+    "number.base": "Day must be a number.",
+    "number.integer": "Day must be an integer.",
+    "number.min": "Day must be between 1 and 12.",
+    "number.max": "Day must be between 1 and 12.",
+  }),
+
+  month: Joi.number().integer().min(1).max(12).optional().messages({
+    "number.base": "Month must be a number.",
+    "number.integer": "Month must be an integer.",
+    "number.min": "Month must be between 1 and 12.",
+    "number.max": "Month must be between 1 and 12.",
+  }),
+
+  year: Joi.number().integer().min(1900).optional().messages({
+    "number.base": "Year must be a number.",
+    "number.integer": "Year must be an integer.",
+    "number.min": "Year must be 1900 or greater.",
+  }),
+
+  categoryId: Joi.string().optional().messages({
+    "string.base": "Category ID must be a string.",
+  }),
+
+  accountId: Joi.string().optional().messages({
+    "string.base": "Account ID must be a string.",
+  }),
+});

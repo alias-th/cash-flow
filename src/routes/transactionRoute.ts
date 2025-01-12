@@ -1,9 +1,25 @@
 import { FastifyInstance } from "fastify";
-import * as transactionController from "../controllers/transactionController";
 import { TransactionType } from "../types";
+import * as transactionController from "../controllers/transactionController";
+import * as transactionSchema from "../schemas/transactionSchema";
+import Joi from "joi";
 
 const transactionRoute = async function (fastify: FastifyInstance) {
   fastify.addHook("preHandler", fastify.authentication);
+
+  fastify.get(
+    "/",
+    {
+      schema: {
+        querystring: transactionSchema.getTransaction,
+      },
+
+      validatorCompiler: ({ schema }) => {
+        return (data: any) => (schema as unknown as Joi.Schema).validate(data);
+      },
+    },
+    transactionController.getTransaction
+  );
 
   fastify.post(
     "/income",
