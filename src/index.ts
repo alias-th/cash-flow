@@ -3,7 +3,6 @@ import buildApp from "./app";
 import closeWithGrace from "close-with-grace";
 import { appDataSource } from "./app-data-source";
 import { FastifyReply } from "fastify";
-
 declare module "fastify" {
   interface FastifyInstance {
     config: {

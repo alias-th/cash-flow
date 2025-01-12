@@ -18,14 +18,16 @@ interface CreateTransactionBody {
   amount: number;
   description: string;
   note?: string;
+  transactionType: TransactionType;
 }
 
 const pipelineAsync = util.promisify(pipeline);
 
-export const income = async (
+export const createTransaction = async (
   request: FastifyRequest<{ Body: CreateTransactionBody }>,
   reply: FastifyReply
 ) => {
+  const transactionType = request.body.transactionType;
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -85,7 +87,12 @@ export const income = async (
     // Calculate balance
     const amount = validatedValue.amount;
     const oldBalance = existingAccount.balance.balance;
-    const newBalance = oldBalance + amount;
+    let newBalance = 0;
+    if (transactionType === TransactionType["INCOME"]) {
+      newBalance = oldBalance + amount;
+    } else {
+      newBalance = oldBalance - amount;
+    }
 
     // Save transaction
     const newTransaction = new Transaction();
@@ -98,17 +105,25 @@ export const income = async (
       newTransaction.note = validatedValue.note;
     }
     newTransaction.createdAt = new Date();
-    newTransaction.transactionType = TransactionType["INCOME"];
+    newTransaction.transactionType = transactionType;
 
     // Save file
     if (file) {
       const arrayBuffer = await file.arrayBuffer();
       const bufferNode = Buffer.from(arrayBuffer);
-      const filename = uuidv4();
-      const saveTo = path.join(__dirname, "..", "uploads", "slips", filename);
+      const fileId = uuidv4();
+      const fileFormat = file.name.split(".");
+      const fileFormatLength = fileFormat.length - 1;
+      const saveTo = path.join(
+        __dirname,
+        "..",
+        "uploads",
+        "slips",
+        `${fileId}.${fileFormat[fileFormatLength]}`
+      );
       const bufferStream = Readable.from(bufferNode);
       await pipelineAsync(bufferStream, fs.createWriteStream(saveTo));
-      newTransaction.transactionSlipId = filename;
+      newTransaction.transactionSlipId = fileId;
     }
 
     // Update balance
