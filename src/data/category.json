@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "6783f2a2127d97ecf618b8e7",
+    "categoryName": {
+      "th": "เสื้อผ้า",
+      "en": "Clothing"
+    },
+    "transactionType": "expense"
+  },
+  {
+    "_id": "6783f2d4127d97ecf618b8e8",
+    "categoryName": {
+      "th": "เงินเดือน",
+      "en": "Salary"
+    },
+    "transactionType": "income"
+  }
+]

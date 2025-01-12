@@ -5,6 +5,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "ts-node-dev src/index.ts",
+    "migrate:down": "ts-node src/migrations/down.ts",
+    "migrate:up": "ts-node src/migrations/up.ts",
     "start": "node index.js"
   },
   "keywords": [],

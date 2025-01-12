@@ -1,0 +1,26 @@
+[
+  {
+    "_id": "6783ef6f757b50d6f88b051b",
+    "username": "test1",
+    "password": "$2b$12$DOTjAugpq6ig7gyVLYcHXOnPW7v9D5OJiHChvHU92DbUEPderGfKq",
+    "email": "test1@gmail.com",
+    "phoneNumber": "0981231234",
+    "firstName": "monton",
+    "lastName": "onnom",
+    "balance": {
+      "balance": 300
+    }
+  },
+  {
+    "_id": "6783ef9a757b50d6f88b051c",
+    "username": "test2",
+    "password": "$2b$12$CBf90Gaz6ZFJmyvVXzv60uaESEYrmWmOw/lg0bLxxQ/6CA0.sse1u",
+    "email": "test2@gmail.com",
+    "phoneNumber": "0981231234",
+    "firstName": "monton",
+    "lastName": "onnom",
+    "balance": {
+      "balance": 0
+    }
+  }
+]

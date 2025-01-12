@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "6783f44b127d97ecf618b8e9",
+    "accountId": "6783ef6f757b50d6f88b051b",
+    "categoryId": "6783f2a2127d97ecf618b8e7",
+    "amount": 300,
+    "balance": 300,
+    "description": {
+      "th": "เงินเดือน",
+      "en": "Salary"
+    },
+    "note": {
+      "th": "โน้ต",
+      "en": "Note"
+    },
+    "createdAt": "2025-01-12T16:56:43.664Z",
+    "transactionType": "income",
+    "transactionSlipId": "a6baa5b6-faae-4283-859c-060ce2d3b4f2"
+  }
+]
