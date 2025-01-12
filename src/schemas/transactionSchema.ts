@@ -84,6 +84,18 @@ export const getTransaction = Joi.object().keys({
     "number.min": "Year must be 1900 or greater.",
   }),
 
+  page: Joi.number().integer().min(1).optional().messages({
+    "number.base": "Page must be a number.",
+    "number.integer": "Page must be an integer.",
+    "number.min": "Page must be 1 or greater.",
+  }),
+
+  limit: Joi.number().integer().min(1).optional().messages({
+    "number.base": "Number must be a number.",
+    "number.integer": "Number must be an integer.",
+    "number.min": "Number must be 1 or greater.",
+  }),
+
   categoryId: Joi.string().optional().messages({
     "string.base": "Category ID must be a string.",
   }),

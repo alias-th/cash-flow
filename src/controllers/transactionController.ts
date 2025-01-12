@@ -27,6 +27,8 @@ interface GetTransactionParams {
   day?: number;
   categoryId?: string;
   accountId?: string;
+  page: number;
+  limit: number;
 }
 
 const pipelineAsync = util.promisify(pipeline);
@@ -154,7 +156,15 @@ export const getTransaction = async (
   request: FastifyRequest<{ Querystring: GetTransactionParams }>,
   reply: FastifyReply
 ) => {
-  const { accountId, categoryId, month, year, day } = request.query;
+  const {
+    accountId,
+    categoryId,
+    month,
+    year,
+    day,
+    page: queryPage,
+    limit: queryLimit,
+  } = request.query;
   let filter: { [key: string]: { [key: string]: string | Date } | string } = {};
 
   // Filter year month day
@@ -194,21 +204,14 @@ export const getTransaction = async (
   }
 
   console.log(filter, "filter");
-
-  // const result = await appDataSource.getMongoRepository(Transaction).find({
-  //   where: filter,
-  //   order: {
-  //     createdAt: 1,
-  //   },
-  //   select: [
-  //     "amount",
-  //     "balance",
-  //     "createdAt",
-  //     "description",
-  //     "note",
-  //     "transactionType",
-  //   ],
-  // });
+  const page = queryPage || 1;
+  const limit = queryLimit || 10;
+  const skip = (page - 1) * limit;
+  const totalCount = await appDataSource.getMongoRepository(Transaction).find({
+    where: filter,
+  });
+  const totalPages = Math.ceil(totalCount.length / limit);
+  const isMaxPage = page >= totalPages;
 
   const result = await appDataSource
     .getMongoRepository(Transaction)
@@ -255,11 +258,19 @@ export const getTransaction = async (
       {
         $sort: { createdAt: 1 },
       },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
     ])
     .toArray();
 
   reply.code(200).send({
     message: "Get transaction successfully.",
     items: result,
+    isMaxPage,
+    totalCount: totalCount.length,
   });
 };
