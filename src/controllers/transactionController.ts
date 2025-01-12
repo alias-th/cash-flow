@@ -169,121 +169,199 @@ export const getTransaction = async (
   request: FastifyRequest<{ Querystring: GetTransactionParams }>,
   reply: FastifyReply
 ) => {
-  const {
-    accountId,
-    categoryId,
-    month,
-    year,
-    day,
-    page: queryPage,
-    limit: queryLimit,
-  } = request.query;
-  let filter: { [key: string]: { [key: string]: string | Date } | string } = {};
+  try {
+    const {
+      accountId,
+      categoryId,
+      month,
+      year,
+      day,
+      page: queryPage,
+      limit: queryLimit,
+    } = request.query;
+    let filter: { [key: string]: { [key: string]: string | Date } | string } =
+      {};
 
-  // Filter year month day
-  if (year && month && day) {
-    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
-    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+    // Filter year month day
+    if (year && month && day) {
+      const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+      const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
-    filter.createdAt = {
-      $gte: startOfDay,
-      $lte: endOfDay,
-    };
-  } else if (year && month) {
-    const startOfMonth = new Date(year, month - 1, 1);
-    const endOfMonth = new Date(year, month, 0); // Last day of the month
+      filter.createdAt = {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      };
+    } else if (year && month) {
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0); // Last day of the month
 
-    filter.createdAt = {
-      $gte: startOfMonth,
-      $lte: endOfMonth,
-    };
-  } else if (year) {
-    const startOfYear = new Date(year, 0, 1);
-    const endOfYear = new Date(year, 11, 31);
+      filter.createdAt = {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      };
+    } else if (year) {
+      const startOfYear = new Date(year, 0, 1);
+      const endOfYear = new Date(year, 11, 31);
 
-    filter.createdAt = {
-      $gte: startOfYear,
-      $lte: endOfYear,
-    };
-  }
+      filter.createdAt = {
+        $gte: startOfYear,
+        $lte: endOfYear,
+      };
+    }
 
-  // Filter account id
-  if (accountId) {
-    filter.accountId = accountId;
-  }
+    // Filter account id
+    if (accountId) {
+      filter.accountId = accountId;
+    }
 
-  if (categoryId) {
-    filter.categoryId = categoryId;
-  }
+    if (categoryId) {
+      filter.categoryId = categoryId;
+    }
 
-  console.log(filter, "filter");
-  const page = queryPage || 1;
-  const limit = queryLimit || 10;
-  const skip = (page - 1) * limit;
-  const totalCount = await appDataSource.getMongoRepository(Transaction).find({
-    where: filter,
-  });
-  const totalPages = Math.ceil(totalCount.length / limit);
-  const isMaxPage = page >= totalPages;
+    console.log(filter, "filter");
+    const page = queryPage || 1;
+    const limit = queryLimit || 10;
+    const skip = (page - 1) * limit;
+    const totalCount = await appDataSource
+      .getMongoRepository(Transaction)
+      .find({
+        where: filter,
+      });
+    const totalPages = Math.ceil(totalCount.length / limit);
+    const isMaxPage = page >= totalPages;
 
-  const result = await appDataSource
-    .getMongoRepository(Transaction)
-    .aggregate([
-      { $match: filter },
-      {
-        $lookup: {
-          from: "account",
-          let: { account_id: { $toObjectId: "$accountId" } },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $eq: ["$_id", "$$account_id"],
+    const result = await appDataSource
+      .getMongoRepository(Transaction)
+      .aggregate([
+        { $match: filter },
+        {
+          $lookup: {
+            from: "account",
+            let: { account_id: { $toObjectId: "$accountId" } },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ["$_id", "$$account_id"],
+                  },
                 },
               },
-            },
-            {
-              $project: {
-                username: 1,
-                email: 1,
-                firstName: 1,
-                lastName: 1,
-                balance: 1,
-                _id: 1,
+              {
+                $project: {
+                  username: 1,
+                  email: 1,
+                  firstName: 1,
+                  lastName: 1,
+                  balance: 1,
+                  _id: 1,
+                },
               },
-            },
-          ],
-          as: "user",
+            ],
+            as: "user",
+          },
         },
-      },
-      { $unwind: "$user" },
-      {
-        $project: {
-          user: 1,
-          amount: 1,
-          description: 1,
-          note: 1,
-          transactionType: 1,
-          categoryId: 1,
-          accountId: 1,
+        { $unwind: "$user" },
+        {
+          $project: {
+            user: 1,
+            amount: 1,
+            description: 1,
+            note: 1,
+            transactionType: 1,
+            categoryId: 1,
+            accountId: 1,
+          },
         },
-      },
-      {
-        $sort: { createdAt: 1 },
-      },
-      {
-        $skip: skip,
-      },
-      {
-        $limit: limit,
-      },
-    ])
-    .toArray();
+        {
+          $sort: { createdAt: 1 },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ])
+      .toArray();
 
-  reply.code(200).send({
-    message: "Get transaction successfully.",
-    items: result,
-    isMaxPage,
-    totalCount: totalCount.length,
-  });
+    reply.code(200).send({
+      message: "Get transaction successfully.",
+      items: result,
+      isMaxPage,
+      totalCount: totalCount.length,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new BadRequestError(error.message);
+    }
+  }
+};
+
+export const getSummaryMonth = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  try {
+    const accountId = request.accountId;
+    const repository = appDataSource.getMongoRepository(Transaction);
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
+    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+    console.log(startOfMonth, endOfMonth);
+
+    // Aggregate by transaction type
+    const summaryTransaction = (await repository
+      .aggregate([
+        {
+          $match: {
+            accountId,
+            createdAt: {
+              $gte: startOfMonth,
+              $lte: endOfMonth,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              transactionType: "$transactionType",
+            },
+            totalAmount: { $sum: "$amount" },
+            transactionCount: { $sum: 1 },
+            averageAmount: { $avg: "$amount" },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            transactionType: "$_id.transactionType",
+            totalAmount: 1,
+            transactionCount: 1,
+            averageAmount: 1,
+          },
+        },
+      ])
+      .toArray()) as any;
+
+    const totalIncome = summaryTransaction?.find((item: any) => {
+      return item.transactionType === TransactionType["INCOME"];
+    }).totalAmount;
+
+    const totalExpense = summaryTransaction?.find((item: any) => {
+      return item.transactionType === TransactionType["EXPENSE"];
+    }).totalAmount;
+
+    reply.code(200).send({
+      message: "Get transaction successfully.",
+      summary: summaryTransaction,
+      balance: totalIncome - totalExpense,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new BadRequestError(error.message);
+    }
+  }
 };

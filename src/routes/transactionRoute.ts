@@ -21,6 +21,8 @@ const transactionRoute = async function (fastify: FastifyInstance) {
     transactionController.getTransaction
   );
 
+  fastify.get("/summary/month", transactionController.getSummaryMonth);
+
   fastify.post(
     "/income",
     {
