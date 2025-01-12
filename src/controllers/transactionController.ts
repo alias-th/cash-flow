@@ -27,7 +27,6 @@ interface GetTransactionParams {
   year?: number;
   day?: number;
   categoryId?: string;
-  accountId?: string;
   page: number;
   limit: number;
 }
@@ -170,8 +169,8 @@ export const getTransaction = async (
   reply: FastifyReply
 ) => {
   try {
+    const accountId = request.accountId;
     const {
-      accountId,
       categoryId,
       month,
       year,
@@ -346,13 +345,15 @@ export const getSummaryMonth = async (
       ])
       .toArray()) as any;
 
-    const totalIncome = summaryTransaction?.find((item: any) => {
-      return item.transactionType === TransactionType["INCOME"];
-    }).totalAmount;
+    const totalIncome =
+      summaryTransaction?.find((item: any) => {
+        return item.transactionType === TransactionType["INCOME"];
+      })?.totalAmount || 0;
 
-    const totalExpense = summaryTransaction?.find((item: any) => {
-      return item.transactionType === TransactionType["EXPENSE"];
-    }).totalAmount;
+    const totalExpense =
+      summaryTransaction?.find((item: any) => {
+        return item.transactionType === TransactionType["EXPENSE"];
+      })?.totalAmount || 0;
 
     reply.code(200).send({
       message: "Get transaction successfully.",

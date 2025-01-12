@@ -99,8 +99,4 @@ export const getTransaction = Joi.object().keys({
   categoryId: Joi.string().optional().messages({
     "string.base": "Category ID must be a string.",
   }),
-
-  accountId: Joi.string().optional().messages({
-    "string.base": "Account ID must be a string.",
-  }),
 });
