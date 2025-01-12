@@ -195,20 +195,68 @@ export const getTransaction = async (
 
   console.log(filter, "filter");
 
-  const result = await appDataSource.getMongoRepository(Transaction).find({
-    where: filter,
-    order: {
-      createdAt: 1,
-    },
-    select: [
-      "amount",
-      "balance",
-      "createdAt",
-      "description",
-      "note",
-      "transactionType",
-    ],
-  });
+  // const result = await appDataSource.getMongoRepository(Transaction).find({
+  //   where: filter,
+  //   order: {
+  //     createdAt: 1,
+  //   },
+  //   select: [
+  //     "amount",
+  //     "balance",
+  //     "createdAt",
+  //     "description",
+  //     "note",
+  //     "transactionType",
+  //   ],
+  // });
+
+  const result = await appDataSource
+    .getMongoRepository(Transaction)
+    .aggregate([
+      { $match: filter },
+      {
+        $lookup: {
+          from: "account",
+          let: { account_id: { $toObjectId: "$accountId" } },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$_id", "$$account_id"],
+                },
+              },
+            },
+            {
+              $project: {
+                username: 1,
+                email: 1,
+                firstName: 1,
+                lastName: 1,
+                balance: 1,
+                _id: 1,
+              },
+            },
+          ],
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          user: 1,
+          amount: 1,
+          description: 1,
+          note: 1,
+          transactionType: 1,
+          categoryId: 1,
+          accountId: 1,
+        },
+      },
+      {
+        $sort: { createdAt: 1 },
+      },
+    ])
+    .toArray();
 
   reply.code(200).send({
     message: "Get transaction successfully.",
