@@ -107,8 +107,24 @@ export const compareToken = (
   return hashedPlainToken === hashedToken;
 };
 
-export const replaceBadWords = (text: string) => {
-  const badWords = badWordsList.words;
-  const regex = new RegExp(`\\b(${badWords.join("|")})\\b`, "gi");
-  return text.replace(regex, (match) => "*".repeat(match.length));
+export const replaceBadWords = (
+  text: string,
+  replacementChar: string = "*"
+) => {
+  if (!text) return text;
+
+  const badWords = badWordsList.words || [];
+  if (!badWords.length) return text;
+
+  const escapedWords = badWords.map((word) =>
+    word.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&")
+  );
+
+  try {
+    const regex = new RegExp(`\\b(${escapedWords.join("|")})\\b`, "gi");
+    return text.replace(regex, (match) => replacementChar.repeat(match.length));
+  } catch (error) {
+    console.error("Error constructing regex:", error);
+    return text;
+  }
 };

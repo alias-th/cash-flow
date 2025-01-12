@@ -12,6 +12,7 @@ import { Category } from "../entities/category.entity";
 import { v4 as uuidv4 } from "uuid";
 import { Transaction } from "../entities/transaction.entity";
 import { MultiLang, TransactionType } from "../types";
+import { replaceBadWords } from "../utils";
 
 interface CreateTransactionBody {
   categoryId: string;
@@ -68,6 +69,18 @@ export const createTransaction = async (
       note?: MultiLang;
     };
 
+    // Checking bad words
+    const description = validatedValue.description;
+    const note = validatedValue.note || {};
+    const keysDescription = Object.keys(description);
+    const keysNote = Object.keys(note);
+    keysDescription.forEach((key) => {
+      description[key] = replaceBadWords(description[key]);
+    });
+    keysNote.forEach((key) => {
+      note[key] = replaceBadWords(note[key]);
+    });
+
     // Validate category
     const categoryIdBSON = new ObjectId(validatedValue.categoryId);
     const existingCategory = await appDataSource.manager
@@ -110,9 +123,9 @@ export const createTransaction = async (
     newTransaction.categoryId = validatedValue.categoryId;
     newTransaction.amount = amount;
     newTransaction.balance = newBalance;
-    newTransaction.description = validatedValue.description;
+    newTransaction.description = description;
     if (validatedValue.note) {
-      newTransaction.note = validatedValue.note;
+      newTransaction.note = note;
     }
     newTransaction.createdAt = new Date();
     newTransaction.transactionType = transactionType;
