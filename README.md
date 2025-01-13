@@ -11,3 +11,29 @@
 | `MONGODB_HOST`     | The host mongodb                      | `localhost` |
 | `MONGODB_DATABASE` | The mongodb database name             | `cash-flow` |
 | `SECRET_MESSAGE`   | The secret message for generate token | `haha`      |
+
+---
+
+### Defining Environment Variables
+
+1. Create a `.env` file in the root directory of the project:
+
+   ```bash
+   touch .env
+   ```
+
+---
+
+## Running the Project
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Run project :
+
+   ```bash
+   npm run dev
+   ```
