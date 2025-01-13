@@ -45,6 +45,13 @@ const authRoutes = async function (fastify: FastifyInstance) {
 
   fastify.route({
     method: "POST",
+    url: "/logout/device",
+    preHandler: fastify.authentication,
+    handler: authController.logoutAllDevice,
+  });
+
+  fastify.route({
+    method: "POST",
     url: "/logout/device/:deviceId",
     schema: {
       params: authSchema.logoutByDeviceId,

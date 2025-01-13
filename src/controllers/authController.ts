@@ -292,3 +292,25 @@ export const logoutByDeviceId = async (
     }
   }
 };
+
+export const logoutAllDevice = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  try {
+    const tokenRepo = appDataSource.getMongoRepository(Token);
+    const accountId = request.accountId;
+
+    // Revoke token
+    await tokenRepo.updateMany(
+      { accountId, revoked: false },
+      { $set: { revoked: true } }
+    );
+
+    reply.code(200).send({ message: "Logged out successfully" });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+  }
+};
