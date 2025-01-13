@@ -100,3 +100,12 @@ export const getTransaction = Joi.object().keys({
     "string.base": "Category ID must be a string.",
   }),
 });
+
+export const getSummary = Joi.object().keys({
+  start: Joi.date().iso().optional().messages({
+    "date.format": "The date must be in ISO 8601 format (YYYY-MM-DD).",
+  }),
+  end: Joi.date().iso().optional().messages({
+    "date.format": "The date must be in ISO 8601 format (YYYY-MM-DD).",
+  }),
+});

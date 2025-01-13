@@ -31,6 +31,11 @@ interface GetTransactionParams {
   limit: number;
 }
 
+interface GetSummaryPeriodBody {
+  start: string;
+  end: string;
+}
+
 const pipelineAsync = util.promisify(pipeline);
 
 export const createTransaction = async (
@@ -355,10 +360,109 @@ export const getSummaryMonth = async (
         return item.transactionType === TransactionType["EXPENSE"];
       })?.totalAmount || 0;
 
+    const income = summaryTransaction.find(
+      (item: any) => item?.transactionType === TransactionType["INCOME"]
+    );
+
+    const expense = summaryTransaction.find(
+      (item: any) => item?.transactionType === TransactionType["EXPENSE"]
+    );
+
     reply.code(200).send({
       message: "Get transaction successfully.",
-      summary: summaryTransaction,
-      balance: totalIncome - totalExpense,
+      income,
+      expense,
+      total: totalIncome - totalExpense,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new BadRequestError(error.message);
+    }
+  }
+};
+
+export const getSummary = async (
+  request: FastifyRequest<{ Querystring: GetSummaryPeriodBody }>,
+  reply: FastifyReply
+) => {
+  try {
+    const { end, start } = request.query;
+    const accountId = request.accountId;
+    const startDate = new Date(start).setHours(0, 0, 0, 0);
+    const endDate = new Date(end).setHours(23, 59, 59, 999);
+    const repository = appDataSource.getMongoRepository(Transaction);
+    let filter = {};
+
+    if (start && end) {
+      filter = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    } else if (start || end) {
+      const currentDate = start ?? end;
+      const endCurrentDate = new Date(currentDate).setHours(23, 59, 59, 999);
+      filter = {
+        $gte: new Date(currentDate),
+        $lte: new Date(endCurrentDate),
+      };
+    }
+
+    console.log(filter);
+
+    // Aggregate by transaction type
+    const summaryTransaction = (await repository
+      .aggregate([
+        {
+          $match: {
+            accountId,
+            createdAt: filter,
+          },
+        },
+        {
+          $group: {
+            _id: {
+              transactionType: "$transactionType",
+            },
+            totalAmount: { $sum: "$amount" },
+            transactionCount: { $sum: 1 },
+            averageAmount: { $avg: "$amount" },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            transactionType: "$_id.transactionType",
+            totalAmount: 1,
+            transactionCount: 1,
+            averageAmount: 1,
+          },
+        },
+      ])
+      .toArray()) as any;
+
+    const totalIncome =
+      summaryTransaction?.find((item: any) => {
+        return item.transactionType === TransactionType["INCOME"];
+      })?.totalAmount || 0;
+
+    const totalExpense =
+      summaryTransaction?.find((item: any) => {
+        return item.transactionType === TransactionType["EXPENSE"];
+      })?.totalAmount || 0;
+
+    const income = summaryTransaction.find(
+      (item: any) => item?.transactionType === TransactionType["INCOME"]
+    );
+
+    const expense = summaryTransaction.find(
+      (item: any) => item?.transactionType === TransactionType["EXPENSE"]
+    );
+
+    reply.code(200).send({
+      message: "Get transaction successfully.",
+      income,
+      expense,
+      total: totalIncome - totalExpense,
     });
   } catch (error) {
     if (error instanceof Error) {
