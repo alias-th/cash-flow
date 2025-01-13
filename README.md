@@ -2,6 +2,10 @@
 
 ---
 
+## DB Diagram
+
+https://dbdiagram.io/d/EdVisory-Test-677be96432a2da11cf1e3a6e
+
 ## Environment Variables
 
 | Variable           | Description                           | Example     |
