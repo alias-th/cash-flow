@@ -258,3 +258,37 @@ export const removeAccount = async (
     }
   }
 };
+
+export const logoutByDeviceId = async (
+  request: FastifyRequest<{ Params: { deviceId: string } }>,
+  reply: FastifyReply
+) => {
+  try {
+    const accountId = request.accountId;
+    const { deviceId } = request.params;
+    const deviceObjectId = new ObjectId(deviceId);
+    const deviceRepo = appDataSource.getMongoRepository(Device);
+    const tokenRepo = appDataSource.getMongoRepository(Token);
+
+    // Checking device
+    const device = await deviceRepo.findOne({
+      where: { _id: deviceObjectId, accountId },
+    });
+
+    if (!device) {
+      throw new BadRequestError("Device is not exists.");
+    }
+
+    // Revoke token
+    await tokenRepo.updateMany(
+      { deviceId: deviceId, revoked: false },
+      { $set: { revoked: true } }
+    );
+
+    reply.code(200).send({ message: "Logged out successfully." });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new BadRequestError(error.message);
+    }
+  }
+};

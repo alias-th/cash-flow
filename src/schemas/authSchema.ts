@@ -56,3 +56,10 @@ export const removeAccount = Joi.object().keys({
     "any.required": "Account ID is required.",
   }),
 });
+
+export const logoutByDeviceId = Joi.object().keys({
+  deviceId: Joi.string().required().messages({
+    "string.empty": "Device ID is required.",
+    "any.required": "Device ID is required.",
+  }),
+});

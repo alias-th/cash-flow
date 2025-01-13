@@ -44,6 +44,19 @@ const authRoutes = async function (fastify: FastifyInstance) {
   );
 
   fastify.route({
+    method: "POST",
+    url: "/logout/device/:deviceId",
+    schema: {
+      params: authSchema.logoutByDeviceId,
+    },
+    preHandler: fastify.authentication,
+    validatorCompiler: ({ schema }) => {
+      return (data: any) => (schema as unknown as Joi.Schema).validate(data);
+    },
+    handler: authController.logoutByDeviceId,
+  });
+
+  fastify.route({
     method: "DELETE",
     url: "/remove-account/:accountId",
     schema: {
