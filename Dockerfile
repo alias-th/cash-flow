@@ -1,11 +1,5 @@
 
-FROM node:18-buster
-
-ENV NODE_ENV=production
-ENV PORT=8000
-ENV MONGODB_PORT=27017
-ENV MONGODB_HOST=localhost
-ENV MONGODB_DATABASE=cash-flow
+FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
@@ -15,7 +9,7 @@ RUN npm install && npm install -g typescript
 
 COPY . .
 
-RUN tsc
+RUN npm run build
 
 EXPOSE 3000
 
