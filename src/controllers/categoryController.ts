@@ -63,3 +63,23 @@ export const removeCategory = async (
     }
   }
 };
+
+export const getAllCategories = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  try {
+    const allCategories = await appDataSource.manager.find(Category, {});
+
+    reply
+      .code(200)
+      .send({
+        message: "Get all categories successfully.",
+        categories: allCategories,
+      });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new BadRequestError(error.message);
+    }
+  }
+};

@@ -6,6 +6,8 @@ import * as categoryController from "../controllers/categoryController";
 const categoryRoute = async function (fastify: FastifyInstance) {
   fastify.addHook("preHandler", fastify.authentication);
 
+  fastify.get("/", categoryController.getAllCategories);
+
   fastify.post(
     "/",
     {
