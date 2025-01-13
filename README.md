@@ -2,9 +2,21 @@
 
 ---
 
+## Feature
+
+- Authentication
+- Login / Register Account
+- Create / Get Transaction
+- Create / Remove Category
+- Remember Device
+
+---
+
 ## DB Diagram
 
 https://dbdiagram.io/d/EdVisory-Test-677be96432a2da11cf1e3a6e
+
+---
 
 ## Environment Variables
 
