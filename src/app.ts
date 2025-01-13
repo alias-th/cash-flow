@@ -6,6 +6,7 @@ import categoryRoute from "./routes/categoryRoute";
 import protectRoutePlugin from "./plugins/protectRoutePlugin";
 import multipart from "@fastify/multipart";
 import transactionRoute from "./routes/transactionRoute";
+import deviceRoute from "./routes/deviceRoute";
 
 const envOptions = {
   dotenv: true,
@@ -70,6 +71,8 @@ async function buildApp() {
   fastify.register(categoryRoute, { prefix: "/api/categories" });
 
   fastify.register(transactionRoute, { prefix: "/api/transactions" });
+
+  fastify.register(deviceRoute, { prefix: "/api/devices" });
 
   fastify.setErrorHandler(async function (error, request, reply) {
     request.log.error({ error });
