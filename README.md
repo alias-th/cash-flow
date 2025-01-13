@@ -76,3 +76,9 @@ npm run migrate:up
 ```
 npm run migrate:down
 ```
+
+---
+
+## Postman Document
+
+https://documenter.getpostman.com/view/32892772/2sAYQXms8t#2176ebdc-94ba-44da-9eb4-a31031680c48
